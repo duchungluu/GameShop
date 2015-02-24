@@ -1,0 +1,70 @@
+{% load staticfiles%}
+<div class="panel panel-default" id="panel2">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            <a data-toggle="collapse" data-target="#collapseTwo">Available Games</a>
+        </h2>
+    </div>
+    <div id="collapseTwo" class="panel-collapse collapse in">
+        <div class="panel-body">
+            {% if not storeGamesObjects %}
+            <p>No available games!</p>
+            {% else %}
+            {% for m in storeGamesObjects %}
+            {% if forloop.first %}
+            <div class="row">
+            {% endif %}
+                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="tile gametile">
+                        <div class="row">
+                            <div class="col-xs-6 col-sm-12 col-md-12 col-lg-12">
+                                <div class="gameText">
+                                    <h3>{{m.title}}</h3>
+                                    <p>{{m.genre}}</p>
+                                    <p>{{m.price}} €</p>
+                                    {% if m.avgRate %}
+                                    <div class="rateit rateitajax" data-rateit-value="{{m.avgRate}}" data-rateit-ispreset="true" data-rateit-readonly="true" data-rateit-step="0.1" data-rateit-max="5"></div>
+                                    {% else %}
+                                    <p>Not rated yet</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-sm-12 col-md-12 col-lg-12">
+                                <div class=frame>
+                                    <span class="helper"></span><img class="gameImg" src="{{m.imageUrl}}" onerror="this.src = '{% static "images/image_not_found.jpg" %}';" width="150" height="100" alt="Game Image">
+                                </div>
+                            </div>
+                            <a class="buygamelink" data-toggle="modal" href="/game/shop/buy/{{m.id}}/" data-target="#myModal"></a>
+                            <!--<a id="buygamelink" href="/game/shop/buy/{{m.id}}/">Buy</a>-->
+                        </div>
+                    </div>
+                </div>
+            {% if forloop.last %}
+
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                     <h4 class="modal-title">Modal title</h4>
+
+                </div>
+                <div class="modal-body"><div class="te"></div></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+</div>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}User Registration{% endblock %}
+
+{% block headfiles %}
+<!-- For facebook login button -->
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap-social.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "font-awesome-4.2.0/css/font-awesome.min.css" %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="col-xs-12 col-sm-8 col-md-6 col-lg-5 centeredcol">
+        <div class="tile margined">
+            <form id="loginForm" class="form" method="post" action="/game/login/">
+                {% csrf_token %}
+                <h2>Please login</h2>
+                <label for="inputEmail" class="sr-only">Email address</label>
+                <input type="text" id="inputEmail" name="username" value="" class="form-control" placeholder="User name" required="" autofocus="">
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" id="inputPassword" name="password" value="" class="form-control" placeholder="Password" required="">
+                <button id="loginButton" class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+            </form>
+            {% if not user or user.is_anonymous %}
+            <br>
+            <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}" class="btn btn-social btn-facebook" >
+                <i class="fa fa-facebook"></i> Sign in with Facebook
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

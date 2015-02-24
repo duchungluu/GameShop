@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Game Registration{% endblock %}
+
+{% block content %}
+<div id="gameregisterform" class="container">
+    <div class="tile margined">
+        <h2 class="form-heading">Register a New Game</h2>
+        <form class="form" method="post" action="/game/register_game/"
+            enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+            {{ form.title.errors }}
+            <label for="id_title">Title:</label>
+            {{ form.title }}
+            {{ form.desc.errors }}
+            <label for="id_desc">Description:</label>
+            {{ form.desc }}
+            {{ form.genre.errors }}
+            <label for="id_genre">Genre:</label>
+            {{ form.genre }}
+            {{ form.price.errors }}
+            <label for="id_price">Price:</label>
+            {{ form.price }}
+            {{ form.imageUrl.errors }}
+            <label for="id_imageUrl">Game Image URL (preferably 200px by 150px):</label>
+            {{ form.imageUrl }}
+            {{ form.url.errors }}
+            <label for="id_url">Game URL:</label>
+            {{ form.url }}
+            <br>
+
+            <!-- Provide a button to click to submit the form. -->
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

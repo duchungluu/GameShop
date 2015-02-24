@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!--
+    This file defines the overall structure of the site. Most if not all other
+    templates should inherit this template (see
+    https://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance).
+-->
+
+<!--
+    {% load staticfiles %} loads the "static" template tag from the
+    staticfiles template library. The "static" template tag generates the
+    absolute URL of the static file. See
+    https://docs.djangoproject.com/en/dev/howto/static-files/ for more info
+-->
+<!--
+    The Bootstrap CSS library is loaded here. This means that the minimized css
+    and javasript files are loaded, and the viewport and http-equiv meta elements
+    are defined as shown in the bootstrap minimal example.
+-->
+
+{% load staticfiles %}
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}My amazing site{% endblock %}</title>
+        <!-- CSS Reset -->
+        <link rel="stylesheet" type="text/css" href="{% static "css/reset.css" %}">
+        <!-- Bootstrap CSS-->
+        <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+        <!-- Custom CSS -->
+        <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}">
+        <!-- jQuery -->
+        <script src="{% static "jquery/jquery-1.11.1.min.js" %}"></script>
+        <!-- Bootstrap Javascript -->
+        <script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+        <!-- Autohiding navbar -->
+        <script src="{% static "javascript/jquery.bootstrap-autohidingnavbar.min.js" %}"></script>
+        <!-- Omatekemät JS funktiot -->
+        <script src="{% static "javascript/ourJavascripts.js" %}"></script>
+        <!-- RateIt:in liittyvät tiedostot -->
+		<script src="{% static "jquery/jquery.rateit.js" %}"></script>
+		<link rel="stylesheet" type="text/css" href="{% static "css/rateit.css" %}">
+        {% block headfiles %}{% endblock %}
+
+    </head>
+    <body>
+        <!-- Navigation Bar from Bootstrap Jumbotron example -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <div id="title" class="navbar-brand"> <a href="/game"> GameShop </a> </div>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul id="navlist" class="nav navbar-nav navbar-right">
+                        {% if user.is_authenticated %}
+                        <li><a>Welcome {{user.username}}!</a></li>                        
+                        {% endif %}
+                        <li><a href="/game/">Home</a></li>
+                        {% if user.is_authenticated %}
+                        <li><a href="/game/shop/">Play</a></li>
+                        <li><a href="/game/profile/">Profile</a></li>
+                        <li><a href="/game/logout/">Logout &nbsp;&nbsp;<span id="logoutglyph" class="glyphicon glyphicon-off" aria-hidden="true"></a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <section id="content" class="tr">
+            {% block content %}
+            <div class="jumbotron">
+                <div class="container">
+                    <h1 class="lighttext">Welcome to GameShop!</h1>
+                    <p class="lighttext">Find your favourite online games fast, without ads, without distractions.</p>
+                    {% if not user.is_authenticated %}
+                    <p><a id="loginbutton" class="btn btn-primary btn-lg" href="/game/login/" role="button">Login &raquo;</a></p>
+                    <p><a id="registerbutton" class="btn btn-primary btn-lg" href="/game/register/" role="button">Register &raquo;</a></p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h2>Browse from 100+ Games</h2>
+                        <p class="darktext">Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+                        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>Developer Options</h2>
+                        <p class="darktext">Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+                        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>Optimized for Mobile Devices</h2>
+                        <p class="darktext">Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+                        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </section>
+        <!-- This is a sticky footer from Bootstrap examples -->
+        <footer class="footer tr">
+            <div class="separator"></div>
+            <div id="footerlinks">
+                <div class="container">
+                    <div class="row" style="width: 70%; margin-left: auto; margin-right: auto;">
+                        <div class="col-md-6">
+                            <h3 class="semidarktext">Links</h3>
+                            <ul>
+                                {% if user.is_authenticated %}
+                                <li><a href="/game/json/">JSON data</a></li>
+                                {% endif %}
+                                <li><a href="http://payments.webcourse.niksula.hut.fi/">Payment Service</a></li>
+                                <li><a href="https://docs.google.com/document/d/1MJsfdNcN7cZdlbLVSvIgjm8hlwiDK6XeZ_AIZKRM7QA/pub">The requirements</a></li>
+                                <li><a href="http://webcourse.cs.hut.fi/game.html">Example Game</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="semidarktext">Contact Information</h3>
+                            <ul>
+                                <li><p class="semidarktext"> email: juhalauriatro@gmail.com</p></li>
+                                <li><p class="semidarktext"> address: Sähkömiehentie 3, 02150 Espoo</p></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="copyright">
+                <p class="semidarktext">© Lauri, Juha, Atro All rights reserved 2015 Powered by Django</p>
+            </div>
+        </footer>
+        <!--With these dummy divs one can determine in jQuery which Bootstrap width mode is active-->
+        <div class="device-xs visible-xs"></div>
+        <div class="device-sm visible-sm"></div>
+        <div class="device-md visible-md"></div>
+        <div class="device-lg visible-lg"></div>
+    </body>
+</html>

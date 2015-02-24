@@ -1,0 +1,18 @@
+<div id="ratingBox">
+    <h2 id="rating">Average Rating</h2>
+    {% if avgRate %}
+    <div class="rateit" data-rateit-value="{{avgRate}}" data-rateit-ispreset="true" data-rateit-step="0.1" data-rateit-readonly="true" data-rateit-max="5"></div>
+    {% else %}
+    <p>This game has not been rated yet</p>
+    {% endif %}
+
+    <h2 id="yourRating">Your Rating</h2>
+    {% if userGame.rating == None %}
+    <div id="rateGame" class="rateit" data-rateit-value=0 data-rateit-resetable="false" data-rateit-step="1" data-rateit-max="5"></div>
+    {% else %}
+    <div id="rateGame" class="rateit" data-rateit-value={{userGame.rating}} data-rateit-resetable="false" data-rateit-step="1" data-rateit-max="5"></div>
+    {% endif %}
+    {% if profile.fbReg %}
+    <button id="fbPostBtn">Let your friends see your high score!</button>
+    {% endif %}
+</div>

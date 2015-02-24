@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+{% block title %}User Registration{% endblock %}
+
+{% block headfiles %}
+<!-- For facebook login button -->
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap-social.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "font-awesome-4.2.0/css/font-awesome.min.css" %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="col-xs-12 col-sm-9 col-md-7 col-lg-6 centeredcol">
+        <div class="tile margined">
+            <form class="form" method="post" action="/game/register/" enctype="multipart/form-data">
+                <h2>New User Registration</h2>
+
+                {% csrf_token %}
+
+                {{ user_form.non_field_errors }}
+                {{ user_form.username.errors }}
+                <label for="id_username">Username:</label>
+                {{ user_form.username }}
+                {{ user_form.email.errors }}
+                <label for="id_email">Email:</label>
+                {{ user_form.email }}
+                {{ user_form.password.errors }}
+                <label for="id_password">Password:</label>
+                {{ user_form.password }}
+                {{ profile_form.non_field_errors }}
+                {{ profile_form.isDeveloper.errors }}
+                <label for="id_isDeveloper">Are you a developer?</label>
+                {{ profile_form.isDeveloper }}
+                <br>
+                {{ profile_form.picture.errors }}
+                <label for="id_picture">Profile Picture URL:</label>
+                {{ profile_form.picture }}
+                <br>
+                <!-- Provide a button to click to submit the form. -->
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+            </form>
+            {% if not user or user.is_anonymous %}
+            <br>
+            <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}" class="btn btn-social btn-facebook" >
+                <i class="fa fa-facebook"></i> Register with Facebook
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,425 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+<head>
+	<title>Jelly Block</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+		}
+        canvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 640px;
+        }
+	</style>
+    <script src="{% static 'pixi.js/bin/pixi.js' %}"></script>
+</head>
+<body>
+    <script>
+    // Create an new instance of a pixi stage
+    // the second parameter is interactivity...
+    var interactive = true;
+    var gameStage = new PIXI.Stage(0xFFFFFF, interactive);
+    var menuStage = new PIXI.Stage(0xFFFFFF, interactive);
+    var window_width = 640;
+    var window_height = 640;
+
+    // create a renderer instance.
+    var renderer = PIXI.autoDetectRenderer(window_width, window_height);
+
+    // add the renderer view element to the DOM
+    document.body.appendChild(renderer.view);
+
+    requestAnimFrame( animate );
+
+    // Define the Vector "Class"
+    function Vector (x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    Vector.prototype.add = function(point_b) {
+        return new Vector(this.x + point_b.x, this.y + point_b.y)
+    };
+    Vector.prototype.subtract = function(point_b) {
+        return new Vector(this.x - point_b.x, this.y - point_b.y)
+    };
+    Vector.prototype.multiply = function(factor) {
+        return new Vector(this.x * factor, this.y * factor)
+    };
+    Vector.prototype.divide = function(factor) {
+        return new Vector(this.x / factor, this.y / factor)
+    };
+    Vector.prototype.distance = function(point_b) {
+        return Math.sqrt(Math.pow(this.x - point_b.x, 2) + Math.pow(this.y - point_b.y, 2));
+    };
+    Vector.prototype.length = function() {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    };
+    Vector.prototype.normalize = function() {
+        return this.divide(this.length());
+    };
+
+    // Define the Jelly "Class"
+    function Jelly(my_stage, type) {
+        this.type = type;
+        this.graphics = new PIXI.Graphics(); // Object for drawing primitive graphic objects
+        this.mass = 1;
+        if (type === "life") {
+            this.radius = 22;
+        } else {
+            this.radius = 32;
+        }
+        this.center = new Vector(this.radius + Math.random()*(window_width-2*this.radius), -this.radius);
+        this.spring_constant = 1.4;
+        this.n_border_points = 6;
+        this.positions = [];
+        this.velocities = [];
+        this.forces = [];
+        this.spring_eq = [];
+
+        // Initialize the border points
+        for (var i = 0; i < this.n_border_points; i++) {
+            var angle = i/this.n_border_points*2*Math.PI;
+            var new_point = new Vector(this.center.x + this.radius*Math.cos(angle), this.center.y + this.radius*Math.sin(angle));
+            this.positions.push(new_point);
+        }
+
+        // Initialize one inner positions
+        this.positions.push(new Vector(this.center.x, this.center.y));
+        this.n_positions = this.positions.length;
+
+        // Initialize the velocities
+        for (var i = 0; i < this.positions.length; i++) {
+            this.velocities.push(jelly_velocity);
+        }
+
+        // Initialize the spring equilibrium distances in a 2D matrix
+        for (var i = 0; i < this.n_positions; i++) {
+            this.spring_eq.push(new Array());
+            for (var j = 0; j < i; j++) {
+                this.spring_eq[i].push(this.positions[i].distance(this.positions[j]));
+            }
+        }
+        my_stage.addChild(this.graphics);
+    }
+
+    Jelly.prototype.draw = function() {
+        this.graphics.clear();
+        var path = [];
+        var shadow = [];
+        for (var i = 0; i < this.n_border_points; i++) {
+            path.push(this.positions[i].x);
+            path.push(this.positions[i].y);
+            shadow.push(this.positions[i].x);
+            shadow.push(this.positions[i].y+15);
+
+        }
+        // Draw shadow
+	    this.graphics.beginFill(0xaaaaaa);
+	    this.graphics.lineStyle(5, 0xaaaaaa, 1);
+        this.graphics.drawPolygon(shadow);
+
+        // Draw ball
+        if (this.type === "life") {
+	        this.graphics.beginFill(0x99cc00);
+	        this.graphics.lineStyle(5, 0x669900, 1);
+        } else {
+	        this.graphics.beginFill(0x33b5e5);
+	        this.graphics.lineStyle(5, 0x0099cc, 1);
+        }
+        this.graphics.drawPolygon(path);
+    };
+
+    Jelly.prototype.evalForces = function(positions) {
+        var forces = [];
+
+        // Add gravitational force
+        for (var i = 0; i < this.n_positions; i++) {
+            var gravity = new Vector(0, 5);
+            forces.push(gravity.multiply(this.mass/this.positions.length));
+        }
+
+        // Add Spring Forces
+        for (var i = 0; i < this.n_positions; i++) {
+            for (var j = 0; j < i; j++) {
+                var eq = this.spring_eq[i][j];
+                var distance = positions[j].subtract(positions[i]);
+                var length = distance.length();
+                var dx = length-eq;
+                var spring_force = distance.divide(length).multiply(dx*this.spring_constant);
+                forces[i] = forces[i].add(spring_force);
+                forces[j] = forces[j].subtract(spring_force);
+            }
+        }
+        return forces;
+    }
+
+    Jelly.prototype.move = function() {
+
+        // Use the midpoint method for solving the differential equation
+        var x_mid = [];
+        for (var i = 0; i < this.n_positions; i++) {
+            x_mid.push(this.positions[i].add(this.velocities[i].multiply(dt/2)));
+        }
+        var f_mid = this.evalForces(x_mid);
+
+        for (var i = 0; i < this.n_positions; i++) {
+            var newVelocity = f_mid[i].divide(this.mass/this.n_positions).multiply(dt);
+            var maxVelocity = 300;
+            if (newVelocity.length() > maxVelocity) {
+                newVelocity = newVelocity.normalize().multiply(maxVelocity);
+            }
+            this.velocities[i] = this.velocities[i].add(newVelocity);
+        }
+
+        // Update Positions
+        for (var i = 0; i < this.n_positions; i++) {
+            var oldPosition = this.positions[i];
+            var newPosition = this.positions[i].add(this.velocities[i].multiply(dt));
+
+            // If any point within Ball, make collision. Position stays
+            // unchanged, velocity changes accoding to two-body collision rules.
+            // The Ball velocity is unchanged.
+            var ball_position = ball.position;
+            if (newPosition.distance(ball_position) <= ball.radius + 5) {
+
+                // Calculate new velocity
+                var v_b = ball.velocity;
+                var v_p = this.velocities[i];
+                var m_b = ball.mass;
+                var m_p = this.mass/this.positions.length;
+                var newVelocity = v_p.add(v_b.subtract(v_p).multiply(2*m_b/(m_p+m_b)));
+                var maxVelocity = 300;
+                if (newVelocity.length() > maxVelocity) {
+                    newVelocity = newVelocity.normalize().multiply(maxVelocity);
+                }
+                this.velocities[i] = newVelocity;
+
+                // Ensure that the point is outside the ball
+                var direction = oldPosition.subtract(ball_position);
+                var unitDirection = direction.normalize();
+                var correction = unitDirection.multiply(ball.radius + 8);
+                this.positions[i] = oldPosition.add(correction.subtract(direction));
+
+            } else {
+                this.positions[i] = newPosition;
+            }
+        }
+        // Calculate center of mass, ensure that no point is too far away
+        // from it
+        var sum = new Vector(0, 0);
+        for (var i = 0; i < this.n_positions; i++) {
+            sum = sum.add(this.positions[i]);
+        }
+        var cm = sum.divide(this.n_positions);
+        for (var i = 0; i < this.n_positions; i++) {
+            var maxDistance = 1.4*this.radius;
+            var position = this.positions[i];
+            var separation = position.subtract(cm);
+            var target = separation.normalize().multiply(maxDistance);
+            var distance = separation.length();
+            var correction = target.subtract(separation);
+            if (distance > maxDistance) {
+                this.positions[i] = this.positions[i].add(correction);
+            }
+        }
+
+        // If outside screen, indicate removal by returning false
+        var margin = 100;
+        if (this.positions[0].x < -margin || this.positions[0].x > window_width + margin) {
+            ++score;
+            scoreText.setText("Score: " + score.toString());
+            if (this.type === "life") {
+                lives = lives + 5;
+                livesText.setText("Lives: " + lives.toString());
+            }
+            return false;
+        } else if (this.positions[0].y > window_height + margin) {
+            --lives;
+            livesText.setText("Lives: " + lives.toString());
+            console.log(lives)
+            if (lives == 0){
+                alert("DIED! Your score: " + score.toString())
+                restart();
+            }
+            return false;
+        }
+        return true;
+    };
+
+    // Define the Ball "Class"
+    function Ball(my_stage) {
+        this.time = 0;
+        this.graphics = new PIXI.Graphics(); // Object for drawing primitive graphic objects
+        this.mass = 0.3;
+        this.radius = 50;
+        this.position = new Vector(window_width/2, window_height/2);
+        this.velocity = new Vector(0, 0);
+        this.graphics.defaultCursor = "none";
+        this.graphics.interactive = true;
+        this.graphics.buttonMode = true;
+        my_stage.addChild(this.graphics);
+    }
+    Ball.prototype.move = function() {
+        // Get new position
+        var newPoint = gameStage.getMousePosition();
+        var newPosition = new Vector(newPoint.x, newPoint.y);
+
+        // Update velocity
+        this.velocity = newPosition.subtract(this.position).divide(dt);
+
+        // Update position
+        this.position = newPosition;
+    };
+    Ball.prototype.draw = function() {
+        this.graphics.clear();
+
+	    this.graphics.beginFill(0xaaaaaa);
+	    this.graphics.lineStyle(5, 0xaaaaaa, 1);
+        this.graphics.drawCircle(this.position.x, this.position.y+10, this.radius);
+
+        // set a fill and line style
+	    this.graphics.beginFill(0xffbb33);
+	    this.graphics.lineStyle(5, 0xff8800, 1);
+        this.graphics.drawCircle(this.position.x, this.position.y, this.radius);
+
+        var childrenSize = gameStage.children.length;
+        gameStage.setChildIndex(this.graphics, childrenSize-1);
+    };
+
+    // Restart game variables variables
+    var state = "menu";
+    var global_time = 0;
+    var dt = 0.1;
+    var jelly_counter = 0;
+    var jelly_interval = 10;
+    var jelly_velocity = new Vector(0, 0);
+    var jellies = [];
+    var ball = new Ball(gameStage);
+    var lives = 5;
+    var score = 0;
+    var level = 1;
+
+    var livesText = new PIXI.Text("Lives: "+lives.toString(), {font:"35px Arial", fill:"#444444"});
+    var scoreText = new PIXI.Text("Score: "+score.toString(), {font:"35px Arial", fill:"#444444"});
+    var levelText = new PIXI.Text("Level: "+level.toString(), {font:"35px Arial", fill:"#444444"});
+    var saveTexture = PIXI.Texture.fromImage("{% static 'images/save_button.png' %}");
+    var saveButton = new PIXI.Sprite(saveTexture);
+
+    livesText.position.x = 10;
+    scoreText.position.x = 10;
+    scoreText.position.y = 35;
+    levelText.position.y = 70;
+    levelText.position.x = 10;
+
+    gameStage.addChild(livesText);
+    gameStage.addChild(scoreText);
+    gameStage.addChild(levelText);
+
+    // Define menu
+    var bgTexture = PIXI.Texture.fromImage("{% static 'images/menu_bg.jpg' %}");
+    var bg = new PIXI.Sprite(bgTexture);
+    var playTexture = PIXI.Texture.fromImage("{% static 'images/play_button.png' %}");
+    var playButton = new PIXI.Sprite(playTexture);
+    playButton.interactive = true;
+    playButton.anchor.y = 0.5;
+    playButton.anchor.x = 0.5;
+    playButton.position.y = window_height/2-25;
+    playButton.position.x = window_width/2;
+
+    var loadTexture = PIXI.Texture.fromImage("{% static 'images/load_button.png' %}");
+    var loadButton = new PIXI.Sprite(loadTexture);
+    loadButton.interactive = true;
+    loadButton.anchor.y = 0.5;
+    loadButton.anchor.x = 0.5;
+    loadButton.position.y = window_height/2+ 100;
+    loadButton.position.x = window_width/2;
+    loadButton.scale.x = 0.5
+    loadButton.scale.y = 0.5
+
+    // Move to game view when pressing play button in menu
+    playButton.click = function(mouseData) {
+        console.log("PLAY!");
+        state = "game";
+    }
+
+    menuStage.addChild(bg);
+    menuStage.addChild(playButton);
+
+    // Timer for increasing level
+    setInterval(function() {
+        if (state === "game") {
+            console.log("Harder");
+            if (jelly_interval - 1 > 1) {
+                jelly_interval -= 0.6;
+            }
+            jelly_velocity.y += 4;
+            jelly_counter = Math.round(global_time / jelly_interval);
+            ++level;
+            levelText.setText("Level: " + level.toString());
+        }
+    }, 4000)
+
+    // The game loop for pixi
+    function animate() {
+
+        requestAnimFrame( animate );
+
+        // Render the menu
+        if (state === "menu") {
+            // render the stage
+            renderer.render(menuStage);
+
+        } else if (state === "game") {
+
+            // Move the Ball
+            ball.move();
+
+            // Draw the ball that is used to block the balls
+            // Move and draw the Jellies
+            for (var i = 0; i < jellies.length;) {
+                var is_drawn = jellies[i].move();
+
+                if (is_drawn) {
+                    jellies[i].draw();
+                    ++i;
+                } else {
+                    jellies[i].graphics.clear();
+                    delete jellies[i];
+                    jellies.splice(i, 1);
+                    console.log("Jelly Removed");
+                }
+            }
+
+            ball.draw();
+
+            // Render the game stage
+            renderer.render(gameStage);
+
+            // Spawn new Jellies with increasing rate and speed
+            global_time += dt;
+            console.log(global_time + " is time");
+            console.log(dt + " is dt");
+            console.log(Math.round(global_time / jelly_interval) + " > " + jelly_counter);
+            if (Math.round(global_time / jelly_interval) > jelly_counter) {
+                console.log("Jelly Added");
+                var lifeChance = 0.05;
+                var lifeRandom = Math.random();
+                var type = "normal";
+                if (lifeRandom < lifeChance) {
+                    type = "life";
+                }
+                jellies.push(new Jelly(gameStage, type));
+                ++jelly_counter;
+            }
+        }
+    }
+    </script>
+	</body>
+</html>

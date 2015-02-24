@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load staticfiles%}
+{% block title %}Game Shop{% endblock %}
+{% load game_tags %}
+{% block content %}
+<div class="container">
+    <div class="row margined">
+        <div id="sidebar" class="col-xs-12 col-sm-4 col-md-3 col-lg-3">
+            <div class="panel-group">
+                <div class="panel panel-default" id="filter">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseThree">Filters</a>
+                        </h2>
+                    </div>
+                    <div id="collapseThree" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <form role="search">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="" id="searchInput"></input>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="searchBtn"><span id="searchglyph" class="glyphicon glyphicon-search" aria-hidden="true"></button>
+                                    </span>
+                                </div>
+                            </form>
+                            <h3>Genre</h3>
+                                {% for g in genres %}
+                                <div class="checkbox">
+                                  <label>
+                                    <input class="genreOption" type="checkbox" value="{{g}}" checked>
+                                    {{g}}
+                                  </label>
+                                </div>
+                                {% endfor %}
+                            <!--</select>-->
+                            <h3>Price range</h3>
+                            <select class="form-control" id="priceRangeFilter">
+                                <option value="Any">Any</option>
+                                <option value="0-9">0-9</option>
+                                <option value="10-19">10-19</option>
+                                <option value="20-29">20-29</option>
+                                <option value="30-39">30-39</option>
+                                <option value="40-49">40-49</option>
+                            </select>
+                            <h3>Order by:</h3>
+                            <select id="orderingFilter" class="form-control">
+                                <option value="Title">Title</option>
+                                <option value="Price (Descending)">Price (Descending)</option>
+                                <option value="Price (Ascending)">Price (Ascending)</option>
+                                <option value="Newest">Newest</option>
+                                <option value="Oldest">Oldest</option>
+                                <option value="Rating">Rating</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-9 col-lg-9">
+            <div class="panel-group">
+                <div class="panel panel-default" id="panel1">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseOne">Owned Games</a>
+                        </h2>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            {% if not ownedGamesObjects %}
+                            <p>No owned games!</p>
+                            {% else %}
+
+                            {% for n in ownedGamesObjects %}
+                            {% if forloop.first %}
+                            <div class="row">
+                            {% endif %}
+                                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="tile gametile">
+                                        <div class="row">
+                                            <div class="col-xs-6 col-sm-12 col-md-12 col-lg-12">
+                                                <div class="gameText">
+                                                    <h3>{{n.game.title}}</h3>
+                                                    <p>{{n.game.genre}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-sm-12 col-md-12 col-lg-12">
+                                                <div class=frame>
+                                                    <span class="helper"></span><img class="gameImg" src="{{n.game.imageUrl}}" onerror="this.src = '{% static "images/image_not_found.jpg" %}';" width="150" height="100" alt="Game Image">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a class="buygamelink" href="/game/play/{{n.game.id}}/"></a>
+                                    </div>
+                                </div>
+                            {% if forloop.last %}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% comment "available_games.html needs to be included like this, otherwise ajax won't work" %}
+                {% endcomment %}
+                <div id="availableGamesContainer">
+                {% include "available_games.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

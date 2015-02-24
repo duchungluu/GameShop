@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Message From GameShop{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="tile margined">
+        <h3>{{title}}</h2>
+        <p>{{message}}</p>
+        {% if linkUrl %}
+        <a href="{{linkUrl}}">{{linkText}}</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

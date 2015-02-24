@@ -1,0 +1,12 @@
+# Ignore python bytecode
+*.pyc
+
+# Ignore gedit's backup files
+*~
+
+# Ignore database file. Each should have their own version.
+gameshop/db.sqlite3
+gameshop/sqlite3.exe
+
+# Ignore migration file.
+gameshop/game/migrations/

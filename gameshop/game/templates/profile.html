@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="row margined">
+        <div class="col-xs-12 col-sm-4 col-md-3 col-lg-3">
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseFour">User Details</a>
+                        </h2>
+                    </div>
+                    <div id="collapseFour" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-xs-8 col-sm-12 col-md-12 col-lg-12">
+                                    <ul>
+                                        User: {{user.username}}
+                                        <li>Developer: {{profile.isDeveloper}}</li>
+                                        <li>Register date: {{profile.regDate}} </li>
+                                    </ul>
+                                </div>
+                                <div class="col-xs-4 col-sm-12 col-md-12 col-lg-12">
+                                    {% if profile.picture %}
+                                    <img id="profileThumb" class="thumbnail" src="{{profile.picture}}">
+                                    {% else %}
+                                    <p class="darktext">No profile picture set!</p>
+                                    {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-7 col-lg-6">
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseFive">Owned Games</a>
+                        </h2>
+                    </div>
+                    <div id="collapseFive" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            {% if ownedGames %}
+                            <table class="table">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Purchase Date</th>
+                                </tr>
+                                {% for game in ownedGames %}
+                                <tr>
+                                    <td>{{game.game.title}}</td>
+                                    <td>{{game.purDate}}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            {% else %}
+                            No owned Games!
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if profile.isDeveloper == 1 %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseSix">Created Games</a>
+                        </h2>
+                    </div>
+                    <div id="collapseSix" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            {% if createdGames %}
+                            <table class="table">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>shop ID</th>
+                                    <th>Release date</th>
+                                    <th>Price</th>
+                                    <th></th>
+                                </tr>
+                                {% for game in createdGames %}
+                                <tr>
+                                    <td>{{game.title}}</td>
+                                    <td>{{game.id}}</td>
+                                    <td>{{game.relDate}}</td>
+                                    <td>{{game.price}}</td>
+                                    <td><button class="btn btn-primary btn-sm remove_bttn" id="{{game.id}}" type="button">Remove</button></td>
+                                    <td><button class="btn btn-primary btn-sm modify_bttn" id="{{game.id}}" type="button">Modify</button></td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            <a id="registergamebutton" class="btn btn-primary btn-lg" href="/game/register_game/">Register New Game</a>
+                            {% else %}
+                            <p>No created games!</p>
+                            <a id="registergamebutton" class="btn btn-primary btn-lg" href="/game/register_game/">Register New Game</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseSeven">Sales Statistics</a>
+                        </h2>
+                    </div>
+                    <div id="collapseSeven" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            {% if createdGames %}
+                            <table class="table">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Purchases</th>
+                                    <th>Latest Purchase</th>
+                                </tr>
+                                {% for title, values in salesData.items %}
+                                <tr>
+                                    <td>{{title}}</td>
+                                    {% for value in values %}
+                                    <td>{{value}}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            {% else %}
+                            <p>No statistics available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+</div>
+{% endblock %}

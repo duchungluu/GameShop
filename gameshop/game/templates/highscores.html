@@ -1,0 +1,35 @@
+<div id="highscores">
+    <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7">
+        <h2>Global Highscores</h2>
+        <table class="table">
+            <tr>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+            {% for score in globalHighscores %}
+            <tr>
+                <td>{{score.player.username}}</td>
+                <td>{{score.score}}</td>
+                <td>{{score.date}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5">
+        <h2>Personal Highscores</h2>
+        <table class="table">
+            <tr>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+            {% for score in personalHighscores %}
+            <tr>
+                <td>{{score.score}}</td>
+                <td>{{score.date}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+

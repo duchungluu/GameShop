@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}Game{% endblock %}
+{% block headfiles %}
+<script src="{% static 'jquery/jquery.rateit.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div id="anchor" class="margined">
+        <div id="gameContainer" class="tile">
+            <h2 class="lighttext">Currently Playing: {{game.title}}</h2>
+
+            {% csrf_token %}
+            <script>
+            var curr_usr = {{user.id}}
+            var curr_game = {{game.id}}
+            var curr_url = '{{game.url}}'
+            </script>
+            <!-- TÄMÄ ON KESKEN! Tässä tilassa voi testata peliä jonka käyttäjä on ostanut
+            - Peli lataa iFrameen testipelin http://webcourse.cs.hut.fi/game.html
+            - Savefilen tallennus, HighScorejen tallennuksessa ja Savefilen noudossa
+              käytetään kuitenkin "oikean" pelin ID:tä, joten tietokantaan ne tallentuva oikealle pelille
+            - Katso tiedostot gameMessage.js, sekä views.py:stä funktio playGame
+            -->
+            <iframe id="gamePlayFrame" src="{{game.url}}"></iframe>
+        </div>
+        <div class="row padded topmargined">
+            {% include "highscores.html" %}
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                {% include "rating_box.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
